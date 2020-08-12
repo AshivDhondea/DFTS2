@@ -1,0 +1,14 @@
+xVals: [2, 4, 6, 8]
+yVals: [['../../simData/0Loss/pool2_2BitQuant_.npy',
+       '../../simData/0Loss/pool2_4BitQuant_.npy', 
+       '../../simData/0Loss/pool2_6BitQuant_.npy', 
+       '../../simData/0Loss/pool2_8BitQuant_.npy'],
+       ['../../simData/0Loss/fc6_2BitQuant_.npy',
+       '../../simData/0Loss/fc6_4BitQuant_.npy', 
+       '../../simData/0Loss/fc6_6BitQuant_.npy', 
+       '../../simData/0Loss/fc6_8BitQuant_.npy']]
+labels: ['pool2', fc6']
+xlabel: 'n bits'
+ylabel: 'classification accuracy'
+plotDir: '../../plotDir/'
+fileName: 'quantization'
