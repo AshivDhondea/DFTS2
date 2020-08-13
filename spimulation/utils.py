@@ -31,7 +31,7 @@ def modelLoader(model, modelDict, customObjects):
         model = getattr(tf.keras.applications,f"{model}")()
         return model
     else:
-	#edited by Hans 10 July 2020
+	    #edited by Hans 10 July 2020
         model = tf.keras.models.load_model(model, custom_objects=customObjects)
         return model
 
