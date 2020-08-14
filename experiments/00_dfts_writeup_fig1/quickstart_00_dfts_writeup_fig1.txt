@@ -1,0 +1,12 @@
+Quickstart for DFTS Writeup Figure 1 experiment
+~/DFTS_TF2/experiments/00_dfts_writeup_fig1/quickstart_00_dfts_writeup_fig1.txt
+
+Fri Aug 14 12:41
+
+# ----------------------------------------------------------------------------- #
+This experiment concerns.
+
+# ----------------------------------------------------------------------------- #
+To replicate this experiment.
+
+
