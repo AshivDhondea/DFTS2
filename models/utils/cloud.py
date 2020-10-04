@@ -6,14 +6,18 @@ edited: 6 August 2020.
 # Changelog:
     17 June 2020: Changed the imports, now importing tensorflow directly.
     6 August 2020: Adapted remoteModel to run in TFv2.
-                   Removed outdated functions createInpCfg and createRMCfg.
-
+    28 September 2020: added code to rename cloud model and delete unconnected input layers.
 """
 import tensorflow as tf
-
-def modelOut(model, layers, index):
+import copy
+# ---------------------------------------------------------------------------------------- #
+def modelOut(loaded_model, layers, index):
     """
-    Produce the outputs of the model on the device.
+    Find the output tensor of the mobile sub-model and the input tensor for the cloud
+    sub-model if the <loaded_model> (with layer names in <layers>) is split at the layer given by
+    <index>.
+
+    Adapted from the original DFTS code for TFv2 compatibility.
 
     # Arguments
         model: keras model
@@ -21,7 +25,7 @@ def modelOut(model, layers, index):
         index: location of the layer where the model is split
 
     # Returns
-        Ouputs of the device model, inputs of the remote model, strings representing the 
+        Ouput tensor of the device model, inputs of the remote model, strings representing the
         names of the layers to be skipped
     """
     device = set(layers[:index+1])
@@ -33,26 +37,81 @@ def modelOut(model, layers, index):
 
     for i in remote:
         rIndex = layers.index(i)
-        #curIn = model.layers[rIndex].input
-        # Hans. 21 June 2020
-        layer_input_tensor= model.layers[rIndex].input
-        for j in device:
-            dIndex = layers.index(j)
-            #out = model.layers[dIndex].output
-            layer_output_tensor = model.layers[dIndex].output
-            if layer_input_tensor.name == layer_output_tensor.name and layer_input_tensor.shape == layer_output_tensor.shape and layer_input_tensor.dtype == layer_output_tensor.dtype: #curIn==out:
-                 #d = model.layers[index].output
-                r = tf.keras.layers.Input(layer_output_tensor.shape[1:])#(out.shape[1:])
-                deviceOuts.append(layer_output_tensor)#(out)
-                remoteIns.append(r)
-                skipNames.append(model.layers[dIndex].name)
+        layer_input_tensor= loaded_model.layers[rIndex].input
+        if type(layer_input_tensor) is list: # Model contains skip connections.
+           for i_lower in range(len(layer_input_tensor)):
+               # loop through elements in list layer_input_tensor
+               lower_layer = layer_input_tensor[i_lower]
+
+               for j in device: # Go through layers and if the input of a layer corresponds to the output of another layer, then they are connected.
+                   dIndex = layers.index(j)
+                   layer_output_tensor = loaded_model.layers[dIndex].output
+                   if lower_layer.name == layer_output_tensor.name and lower_layer.shape == layer_output_tensor.shape and lower_layer.dtype == layer_output_tensor.dtype:
+                       r = tf.keras.layers.Input(layer_output_tensor.shape[1:])
+                       deviceOuts.append(layer_output_tensor)
+                       remoteIns.append(r)
+                       skipNames.append(loaded_model.layers[dIndex].name)
+        else: # Model does not contain skip connections.
+            for j in device:  # Go through layers and if the input of a layer corresponds to the output of another layer, then they are connected.
+                dIndex = layers.index(j)
+                layer_output_tensor = loaded_model.layers[dIndex].output
+
+                if layer_input_tensor.name == layer_output_tensor.name and layer_input_tensor.shape == layer_output_tensor.shape and layer_input_tensor.dtype == layer_output_tensor.dtype:
+                    r = tf.keras.layers.Input(layer_output_tensor.shape[1:])
+                    deviceOuts.append(layer_output_tensor)
+                    remoteIns.append(r)
+                    skipNames.append(loaded_model.layers[dIndex].name)
 
     return deviceOuts, remoteIns, skipNames
+# ---------------------------------------------------------------------------------------- #
+def createInpCfg(inp):
+    cfg = {}
+    cfg['name'] = inp.name.split(':')[0]
+    cfg['class_name'] = 'InputLayer'
+    cfg['config'] = {'batch_input_shape':tuple(inp.shape.as_list()),
+    'dtype':'float32', 'sparse':False, 'name':inp.name.split(':')[0]}
+    cfg['inbound_nodes'] = []
 
-def remoteModel(loaded_model,split,custom_objects=None):
+    return cfg
+
+def createRMCfg(loaded_model, remoteIns, deviceOuts, index):
+    """Create the remote model's configuration dictionary
+
+    # Arguments
+        loaded_model: keras model for the full DNN.
+        remoteIns: input tensors to the remote model
+        deviceOuts: output tensors from the device model
+        index: location of the layer where the model is split
+
+    # Returns
+        Dictionary representing the configuration of the remote model
     """
-    Implement the remote sub-model for BrokenModel.
-    
+    deviceOuts = [i.name for i in deviceOuts]
+    modelCfg = loaded_model.get_config()
+
+    remoteIns = [createInpCfg(i) for i in remoteIns]
+
+    modelLayers = modelCfg['layers'][index+1:]
+
+    for i in remoteIns:
+        modelLayers.insert(0, i)
+    modelCfg['layers'] = modelLayers
+
+    return modelCfg
+
+def fn_set_weights(smaller_model,original_model):
+    modelLayers = [i.name for i in original_model.layers]
+    for l in smaller_model.layers:
+        orig = l.name
+        if orig in modelLayers:
+            lWeights = original_model.get_layer(orig)
+            l.set_weights(lWeights.get_weights())
+    return smaller_model
+
+def remoteModel(loaded_model,split_layer,custom_objects=None):
+    """
+    Create the remote sub-model <cloud_model> for the <loaded_model> split at layer <split>.
+
     Based on:
         https://stackoverflow.com/questions/49193510/how-to-split-a-model-trained-in-keras
 
@@ -60,11 +119,10 @@ def remoteModel(loaded_model,split,custom_objects=None):
     ----------
     loaded_model : tf.keras model
         Full tf.keras model which needs to be split.
-    split : string
+    split_layer : string
         String representing the split layer in the DNN model.
     custom_objects : TYPE, optional
         DESCRIPTION. The default is None.
-        Hans: unused up to now.
 
     Returns
     -------
@@ -74,12 +132,65 @@ def remoteModel(loaded_model,split,custom_objects=None):
 
     """
     layers = [i.name for i in loaded_model.layers]
-    layerLoc = layers.index(split)  
-    
-    cloud_input = tf.keras.layers.Input(loaded_model.layers[layerLoc+1].input_shape[1:])
-    cloud_model = cloud_input
-    for layer in loaded_model.layers[layerLoc+1:]:
-        cloud_model = layer(cloud_model)
-    cloud_model = tf.keras.models.Model(inputs=cloud_input, outputs=cloud_model)
-    
+    layerLoc = layers.index(split_layer)
+
+    deviceOuts, remoteIns, skipNames =modelOut(loaded_model, layers,layerLoc)
+
+    # names for layers used for input to the remote model
+    inNames = [i.name.split(':')[0] for i in remoteIns]
+
+    remote_config = createRMCfg(loaded_model, remoteIns, deviceOuts,layerLoc)
+
+    for i in remote_config['layers']:
+        if len(i['inbound_nodes'])==0:
+            # Continue for input layers to the remote model.
+            continue
+        # Sort out inbound nodes for layers downstream of the input layer(s) of
+        # remote model.
+        temp = i['inbound_nodes'][0]
+        for j in temp:
+            if j[0] in skipNames:
+                jIndex = temp.index(j)
+                j[0] = inNames[skipNames.index(j[0])]
+                temp[jIndex] = j
+        i['inbound_nodes'][0] = temp
+
+    remote_config['input_layers'] = []
+    for i in inNames:
+        # Add input layers' dictionary to configuration dictionary.
+        remote_config['input_layers'].append([i, 0, 0])
+
+    # Set the name of the cloud model.
+    remote_config['name'] = 'remote_sub_model'
+
+    layer_to_check = []
+    for i in remote_config['input_layers']:
+        layer_to_check.append(i[0])
+
+    layer_confirmed = []
+    for i in remote_config['layers']:
+        temp = i['inbound_nodes']
+        if len(i['inbound_nodes']) != 0:
+            temp = i['inbound_nodes'][0]
+            for j in temp:
+                for c in range(len(layer_to_check)):
+                    if layer_to_check[c] == j[0]:
+                        layer_confirmed.append(j[0])
+
+    layer_confirmed_set = set(layer_confirmed)
+    layer_unconnected = [x for x in layer_to_check if x not in layer_confirmed_set]
+
+    remote_config_cleaned = copy.deepcopy(remote_config)
+    for i in range(len(layer_unconnected)):
+        del remote_config_cleaned['input_layers'][layer_to_check.index(layer_unconnected[i])]
+
+        for j in range(len(remote_config_cleaned['layers'])):
+            layer_j = remote_config_cleaned['layers'][j]
+
+            if layer_j['name'] == layer_unconnected[i]:
+                del remote_config_cleaned['layers'][j]
+                break
+
+    cloud_model = tf.keras.Model.from_config(remote_config_cleaned, custom_objects=custom_objects)
+    cloud_model = fn_set_weights(cloud_model,loaded_model)
     return cloud_model

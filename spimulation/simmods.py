@@ -10,7 +10,7 @@ sys.path.append('..')
 import numpy as np
 import time
 
-from models.packetModel import PacketModel as PM
+from models.packetModel import PacketModel as PacketModel
 
 
 def deviceSim(model, data):
@@ -25,9 +25,9 @@ def deviceSim(model, data):
         Result of the device simulation
     """
     start_time = time.time()
-    deviceOut         = model.predict(data)
+    deviceOut  = model.predict(data)
     total_time = time.time() - start_time
-    print(f"Device simulation Complete in {total_time}!!")
+    print(f"Device simulation Complete in {total_time}s")
     return deviceOut
 
 # def compress(deviceOut):
@@ -47,10 +47,11 @@ def transmit(compressOut, channel, rowsPerPacket):
         Packetized and lost data along with the indices of the lost and retained packets
     """
     start_time   = time.time()
-    pckts        = PM(compressOut, rowsPerPacket)
+    #pckts        = PM(compressOut, rowsPerPacket)
+    pckts = PacketModel(rows_per_packet=rowsPerPacket,data_tensor=compressOut)
 
-    lossMatrix = channel.simulate(pckts.packetSeq.shape[0]*pckts.packetSeq.shape[1]*pckts.packetSeq.shape[-1])
-    lossMatrix = lossMatrix.reshape(pckts.packetSeq.shape[0], pckts.packetSeq.shape[1], pckts.packetSeq.shape[-1])
+    lossMatrix = channel.simulate(pckts.packet_seq.shape[0]*pckts.packet_seq.shape[1]*pckts.packet_seq.shape[-1])
+    lossMatrix = lossMatrix.reshape(pckts.packet_seq.shape[0], pckts.packet_seq.shape[1], pckts.packet_seq.shape[-1])
 
     receivedIndices = np.where(lossMatrix==1)
     receivedIndices = np.dstack((receivedIndices[0], receivedIndices[1], receivedIndices[2]))
@@ -58,10 +59,10 @@ def transmit(compressOut, channel, rowsPerPacket):
     lostIndices = np.where(lossMatrix==0)
     lostIndices = np.dstack((lostIndices[0], lostIndices[1], lostIndices[2]))
 
-    pckts.packetSeq[lostIndices[:,:,0], lostIndices[:,:,1], :, :, lostIndices[:,:,-1]] = 0
+    pckts.packet_seq[lostIndices[:,:,0], lostIndices[:,:,1], :, :, lostIndices[:,:,-1]] = 0
 
     total_time = time.time() - start_time
-    print(f"Transmission Complete in {total_time}!!")
+    print(f"Transmission Complete in {total_time}s")
     return (pckts, lossMatrix, receivedIndices, lostIndices)
 
 def errorConceal(interpPackets, pBuffer, receivedIndices, lostIndices, rowsPerPacket):

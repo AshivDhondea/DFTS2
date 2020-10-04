@@ -33,7 +33,7 @@ class QLayer(object):
         # self.typeSize = 'uint'+str(cpt(self.nBits))
         self.quanData = np.round(((data-self.min)/(self.max-self.min))*((2**self.nBits)-1))#.astype(self.typeSize)
         total_time = time.time() - start_time
-        print(f"bit quantizer complete in {total_time}!!")
+        print(f"bit quantizer complete in {total_time}s")
 
     def inverseQuantizer(self):
         """Performs inverse of quantization

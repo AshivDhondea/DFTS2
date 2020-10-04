@@ -1,0 +1,20 @@
+Model:
+  customObjects:
+    class: []
+    functions: []
+    module: []
+  kerasmodel: keras_models_full/resnet18_model.h5
+OutputDir:
+  simDataDir: simData/
+SplitLayer:
+  split: stage1_unit1_relu1
+Task:
+  value: 0
+TestInput:
+  batch_size: 64
+  dataset: imagenet
+  testdir:
+    annotations: []
+    images: largeTest_resized
+    testNames: []
+taskParams: taskParams.yml

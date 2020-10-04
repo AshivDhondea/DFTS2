@@ -1,0 +1,32 @@
+Model:
+  kerasmodelname: vgg16
+InputDir:
+  simDataDir: simData/
+SplitLayer:
+  split: block3_conv2
+ExperimentDetails:
+  MC_ini: 0
+  MC_fin: 0
+  batch_ini: 0
+  batch_fin: 1
+  save_damaged_tensor: False
+Transmission:
+  channel:
+    GilbertChannel:
+      burstLength: 7
+      include: true
+      lossProbability: 0.3
+    RandomLossChannel:
+      include: false
+      lossProbability: 0
+  quantization:
+    include: true
+    numberOfBits: 8
+  rowsperpacket: 8
+TensorCompletion:
+  SiLRTC:
+    include: true
+    maxiters: 200
+  HaLRTC:
+    include: true
+    maxiters: 200
