@@ -7,26 +7,25 @@ edited: 6 August 2020.
     17 June 2020: Changed the imports, now importing tensorflow directly.
     6 August 2020: Adapted remoteModel to run in TFv2.
     28 September 2020: added code to rename cloud model and delete unconnected input layers.
+    5 February 2021: cleaned up and added descriptions.
 """
 import tensorflow as tf
-import copy
+#import copy
 # ---------------------------------------------------------------------------------------- #
 def modelOut(loaded_model, layers, index):
     """
-    Find the output tensor of the mobile sub-model and the input tensor for the cloud
-    sub-model if the <loaded_model> (with layer names in <layers>) is split at the layer given by
-    <index>.
+    Find the output tensor of the mobile sub-model and the input tensor for the cloud sub-model if the <loaded_model> (with layer names in <layers>) is split at the layer given by     <index>.
 
     Adapted from the original DFTS code for TFv2 compatibility.
 
     # Arguments
         model: keras model
-        layers: list of strings representing the names of the layer in the model
-        index: location of the layer where the model is split
+        layers: list of strings representing the names of the layer in the model.
+        index: location of the layer where the model is split.
 
     # Returns
         Ouput tensor of the device model, inputs of the remote model, strings representing the
-        names of the layers to be skipped
+        names of the layers to be skipped.
     """
     device = set(layers[:index+1])
     remote = layers[index+1:]
@@ -65,6 +64,18 @@ def modelOut(loaded_model, layers, index):
     return deviceOuts, remoteIns, skipNames
 # ---------------------------------------------------------------------------------------- #
 def createInpCfg(inp):
+    """
+    Create input layer configuration.
+
+    Parameters
+    ----------
+    inp : Input layer.
+
+    Returns
+    -------
+    cfg : Dictionary representing the configuration of the layer.
+
+    """
     cfg = {}
     cfg['name'] = inp.name.split(':')[0]
     cfg['class_name'] = 'InputLayer'
@@ -75,7 +86,7 @@ def createInpCfg(inp):
     return cfg
 
 def createRMCfg(loaded_model, remoteIns, deviceOuts, index):
-    """Create the remote model's configuration dictionary
+    """Create the remote model's configuration dictionary.
 
     # Arguments
         loaded_model: keras model for the full DNN.
@@ -100,6 +111,22 @@ def createRMCfg(loaded_model, remoteIns, deviceOuts, index):
     return modelCfg
 
 def fn_set_weights(smaller_model,original_model):
+    """
+    Reset the weights for the smaller tf.keras model created.
+
+    Parameters
+    ----------
+    smaller_model : tf.keras model
+        Model for the smaller model obtained from the full model.
+    original_model : tf.keras model
+        Model for the original model (the full model).
+
+    Returns
+    -------
+    smaller_model : tf.keras model
+       Model for the smaller model with the weights properly set.
+
+    """
     modelLayers = [i.name for i in original_model.layers]
     for l in smaller_model.layers:
         orig = l.name
@@ -163,34 +190,6 @@ def remoteModel(loaded_model,split_layer,custom_objects=None):
     # Set the name of the cloud model.
     remote_config['name'] = 'remote_sub_model'
 
-    layer_to_check = []
-    for i in remote_config['input_layers']:
-        layer_to_check.append(i[0])
-
-    layer_confirmed = []
-    for i in remote_config['layers']:
-        temp = i['inbound_nodes']
-        if len(i['inbound_nodes']) != 0:
-            temp = i['inbound_nodes'][0]
-            for j in temp:
-                for c in range(len(layer_to_check)):
-                    if layer_to_check[c] == j[0]:
-                        layer_confirmed.append(j[0])
-
-    layer_confirmed_set = set(layer_confirmed)
-    layer_unconnected = [x for x in layer_to_check if x not in layer_confirmed_set]
-
-    remote_config_cleaned = copy.deepcopy(remote_config)
-    for i in range(len(layer_unconnected)):
-        del remote_config_cleaned['input_layers'][layer_to_check.index(layer_unconnected[i])]
-
-        for j in range(len(remote_config_cleaned['layers'])):
-            layer_j = remote_config_cleaned['layers'][j]
-
-            if layer_j['name'] == layer_unconnected[i]:
-                del remote_config_cleaned['layers'][j]
-                break
-
-    cloud_model = tf.keras.Model.from_config(remote_config_cleaned, custom_objects=custom_objects)
+    cloud_model = tf.keras.Model.from_config(remote_config,custom_objects=custom_objects)
     cloud_model = fn_set_weights(cloud_model,loaded_model)
     return cloud_model

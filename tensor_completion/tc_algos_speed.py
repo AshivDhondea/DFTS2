@@ -24,6 +24,7 @@ intelligence,” IEEE Access, vol. 8, pp. 41162–41174, 2020.
 import numpy as np
 import copy
 from .tensorly_base import *
+import time
 """
 If you able to install tensorly, you can import tensorly directly and comment out
 the line above. If you are running your experiment on a ComputeCanada cluster,
@@ -34,7 +35,7 @@ you won't be able to install tensorly.
 
 def swap(a, b):
     """
-    Swap a and b.
+
 
     Parameters
     ----------
@@ -117,8 +118,8 @@ def makeOmegaSet_rowPacket(p, n, sizeOmega):
 
 def ReplaceInd(X, subs, vals):
     """
-    Replace in X values given by vals in location given by subs.
-    
+
+
     Parameters
     ----------
     X : TYPE
@@ -142,10 +143,8 @@ def ReplaceInd(X, subs, vals):
 
 def shrinkage(X, t):
 	"""
-    Perform shrinkage with threshold t on matrix X.
-    
-    Refer to Bragilevsky, Bajic paper for explanation.
-    
+
+
     Parameters
     ----------
     X : TYPE
@@ -157,6 +156,7 @@ def shrinkage(X, t):
     -------
     d : TYPE
         DESCRIPTION.
+
     """
     # SVD decomposition with an offset (s needs to be made diagonal)
 	u, s, v = np.linalg.svd(X, full_matrices=False) # matlab uses 'econ' to not produce full matricies
@@ -248,7 +248,7 @@ def fn_silrtc_damaged(X_corrupted,num_iters_K,subs,vals):
     a = a/np.sum(a)
 
     for q in range(num_iters_K):
-        #print(f"SilRTC iteration {q}")
+        print(f"SilRTC iteration {q}")
         M = np.zeros(X_corrupted.shape)
         for i in range(3):
             svd = shrinkage(unfold(X_estimated,i), a[i]/b[i])
@@ -358,8 +358,8 @@ def fn_halrtc_damaged(X_corrupted,num_iters_K,subs,vals):
             temp = unfold(X_estimated,i) + (unfold(np.squeeze(Yi[:,:,:,i]),i)/rho)
             Mi[:,:,:,i] = fold(shrinkage(temp, a[i]/rho), i, X_corrupted.shape)
         # Update X (Step 2)
-        X_est = np.sum(Mi-(Yi/rho),axis=3)/3
-        X_estimated = ReplaceInd(X_est, subs, vals)
+        X_estimated = np.sum(Mi-(Yi/rho),axis=3)/3
+        X_estimated = ReplaceInd(X_estimated, subs, vals)
 
         # Update Yi tensors (Step 3)
         for i in range(ArrSize[-1]):
@@ -391,7 +391,7 @@ def fn_halrtc_damaged_error(X_corrupted,num_iters_K,subs,vals):
         DESCRIPTION.
 
     """
-    X_estimated = np.copy(X_corrupted) #copy.deepcopy(X_corrupted)
+    X_estimated = copy.deepcopy(X_corrupted)
 
     a = np.abs(np.random.randn(3,1))
     a = a/np.sum(a)
@@ -432,3 +432,130 @@ def fn_halrtc_damaged_error(X_corrupted,num_iters_K,subs,vals):
         X_estimated_prev = X_estimated
 
     return X_estimated_iters, error_iters
+
+
+
+def fn_halrtc_speed(X_corrupted,num_iters_K,subs,vals,time_limit):
+    """
+    Perform HaLRTC on damaged tensors.
+
+    Parameters
+    ----------
+    X_corrupted : TYPE
+        DESCRIPTION.
+    num_iters_K : TYPE
+        DESCRIPTION.
+    subs : TYPE
+        DESCRIPTION.
+    vals : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    X_estimated : TYPE
+        DESCRIPTION.
+
+    """
+    X_estimated = np.copy(X_corrupted)#copy.deepcopy(X_corrupted)
+
+    a = np.abs(np.random.randn(3,1))
+    a = a/np.sum(a)
+    rho = 1e-6
+
+    # Create tensor holders for Mi and Yi done to simplify variable storage
+    row, col, dep = X_corrupted.shape
+    ArrSize = (row, col, dep, X_corrupted.ndim)
+
+    Mi = np.zeros(ArrSize)
+    Yi = np.zeros(ArrSize)
+
+    #ArrSize_iters = (row,col,dep,num_iters_K)
+
+    iter_count = 0
+    halrtc_elapsed = 0.
+    halrtc_start = time.time()
+    while halrtc_elapsed < time_limit:
+        #print(f'iter count {iter_count}')
+        #for q in range(num_iters_K):
+        #print(f"HalRTC iteration {q}")
+        # Calculate Mi tensors (Step 1)
+        for i in range(3):
+            temp = unfold(X_estimated,i) + (unfold(np.squeeze(Yi[:,:,:,i]),i)/rho)
+            Mi[:,:,:,i] = fold(shrinkage(temp, a[i]/rho), i, X_corrupted.shape)
+        # Update X (Step 2)
+        X_est = np.sum(Mi-(Yi/rho),axis=3)/3
+        X_estimated = ReplaceInd(X_est, subs, vals)
+
+        # Update Yi tensors (Step 3)
+        for i in range(ArrSize[-1]):
+            Yi[:,:,:,i] = np.squeeze(Yi[:,:,:,i])-rho*(np.squeeze(Mi[:,:,:,i])-X_estimated)
+
+        # Modify rho to help convergence
+        rho = 1.2*rho
+
+        iter_count += 1
+        if iter_count == num_iters_K:
+            print('reached max iters')
+            break
+
+
+        halrtc_elapsed = time.time() - halrtc_start
+
+    print(f'HaLRTC took {halrtc_elapsed}s')
+
+    return X_estimated, iter_count
+
+
+
+def fn_silrtc_speed(X_corrupted,num_iters_K,subs,vals,time_limit):
+    """
+    Perform SiLRTC on damaged tensors. Keep track of error.
+
+    Parameters
+    ----------
+    X_corrupted : TYPE
+        DESCRIPTION.
+    num_iters_K : TYPE
+        DESCRIPTION.
+    subs : TYPE
+        DESCRIPTION.
+    vals : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    X_estimated : TYPE
+        DESCRIPTION.
+    error_iters:
+
+    """
+    X_estimated = copy.deepcopy(X_corrupted)
+
+    b = np.abs(np.random.randn(3,1))/200
+    a = np.abs(np.random.randn(3,1))
+    a = a/np.sum(a)
+
+    row, col, dep = X_corrupted.shape
+    #ArrSize_iters = (row,col,dep,num_iters_K)
+    iter_count = 0
+    silrtc_elapsed = 0.
+    silrtc_start = time.time()
+    while silrtc_elapsed < time_limit:
+        #for q in range(num_iters_K):
+        #print(f"SilRTC iteration {q}")
+        M = np.zeros(X_corrupted.shape)
+        for i in range(3):
+            svd = shrinkage(unfold(X_estimated,i), a[i]/b[i])
+            M = M + fold(b[i]*svd, i, X_corrupted.shape)
+
+        M = M/np.sum(b)
+        # Update both M & X as they are used in the next cycle
+        X_estimated = ReplaceInd(M, subs, vals)
+
+        iter_count += 1
+        if iter_count == num_iters_K:
+            print('reached max iters')
+            break
+        silrtc_elapsed = time.time() - silrtc_start
+    print(f'SiLRTC took {silrtc_elapsed}s')
+    return X_estimated, iter_count

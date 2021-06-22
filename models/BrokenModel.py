@@ -56,7 +56,7 @@ class BrokenModel(object):
         # modelOut returns
         deviceOuts, remoteIns, skipNames = modelOut(self.model, self.layers, self.layerLoc)
 
-        device_model = tf.keras.models.Model(inputs=self.model.input, outputs=deviceOuts[0])
+        device_model = tf.keras.models.Model(inputs=self.model.input, outputs=deviceOuts)
         device_config = device_model.get_config()
         # Set the name of the mobile model.
         device_config['name'] = 'device_sub_model'

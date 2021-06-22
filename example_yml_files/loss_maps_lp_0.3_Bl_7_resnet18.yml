@@ -1,0 +1,36 @@
+Model:
+  customObjects:
+    class: []
+    functions: []
+    module: []
+  kerasmodel: keras_models_full/resnet18_model.h5
+OutputDir:
+  simDataDir: lossMaps
+SplitLayer:
+  split: add_1
+Task:
+  value: 0
+  MonteCarloRuns: 2
+TestInput:
+  batch_size: 256
+  dataset: imagenet
+  testdir:
+    annotations: []
+    images: largeTest
+    testNames: []
+Transmission:
+  rowsperpacket: 8
+  channel:
+    GilbertChannel:
+      burstLength: 7
+      include: True
+      lossProbability: 0.3
+    RandomLossChannel:
+      include: false
+      lossProbability: 0
+  quantization:
+    include: True
+    1:
+      numberOfBits: 8
+    2:
+      numberOfBits: 8

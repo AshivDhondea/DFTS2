@@ -1,9 +1,6 @@
 """
 Packetization model class.
 
-"""
-
-"""
 Created on Thu Sep 10 12:00:05 2020
 
 Significant changes from the original DFTS.
@@ -17,9 +14,12 @@ https://stackoverflow.com/questions/6451034/python-paradigm-for-derived-fields-c
 import numpy as np
 
 class PacketModel(object):
+    """Packet Model class."""
 
     def __init__(self, **kwargs):
         """
+        Initialize a packet model class.
+        
         # Arguments
         data: 4-D tensor to be packetized
         rowsPerPacket: number of rows of the feature map to be considered as one packet
@@ -45,7 +45,8 @@ class PacketModel(object):
 
 
     def dataToPacket(self):
-        """ Converts 4D tensor to 5D tensor of packets
+        """
+        Convert 4D tensor to 5D tensor of packets.
 
         # Arguments
             data: 4D tensor
@@ -66,7 +67,8 @@ class PacketModel(object):
         return self.packet_seq
 
     def packetToData(self):
-        """Converts the packets back to original 4D tensor
+        """
+        Convert the packets back to original 4D tensor.
 
         # Returns
             4D tensor

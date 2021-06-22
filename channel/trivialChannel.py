@@ -1,16 +1,19 @@
 """
 Trivial channel class.
 
-Documentation to be sorted out later.
+Random loss channel model.
 
-
+Unchanged from original DFTS.
 """
 import numpy as np
 
 class RLC(object):
-    """Simulates a random loss channel"""
+    """Simulate a random loss channel."""
+    
     def __init__(self, lossProb):
         """
+        Initialize a random loss channel model class.
+        
         # Arguments
             lossProb: loss probability of the channel
         """
@@ -19,11 +22,11 @@ class RLC(object):
         self.lossMatrix = []
 
     def simulate(self, lossSize):
-        """ Defines the packets that are lost.
-
+        """
+        Define the packets that are lost.
+        
         # Arguments
             lossSize: number of packets
-
         # Returns
             A matrix containing values that are lost and retained.
         """

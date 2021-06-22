@@ -11,24 +11,27 @@ sys.path.append('..')
 from channel.gbChannel import GBC
 from channel.trivialChannel import RLC
 from models.quantizer import QLayer as QL
-from plc import linearInterp, nearestNeighbours
-
-def quantInit(quantization):
-    """Selects quantization based on the user's choice
+# ---------------------------------------------------------------------------- #
+def quantInit(quantization,tensor_id='default_for_testConfig'):
+    """Select quantization based on the user's choice.
 
     # Arguments
         quantization: dictionary containing user's options
+        tensor_id: integer representing index of tensor to be packetized.
 
     # Returns
         QLayer object or string if quantization is turned off
     """
     if quantization['include']:
-        return QL(quantization['numberOfBits'])
+        if tensor_id == 'default_for_testConfig':
+            return QL(quantization['numberOfBits'])
+        else:
+            return QL(quantization[tensor_id]['numberOfBits'])
     else:
         return 'noQuant'
 
 def loadChannel(channel):
-    """Selects channel based on the user's choice
+    """Select channel based on the user's choice.
 
     # Arguments
         channel: dictionary containing user's options
@@ -47,21 +50,3 @@ def loadChannel(channel):
     elif chtype=='RandomLossChannel':
         lp = channel[chtype]['lossProbability']
         return RLC(lp)
-
-def plcLoader(lossConceal):
-    """Selects loss concealment based on the user's choice
-
-    # Arguments
-        lossConceal: dictionary containing user's options
-
-    # Returns
-        Function object or string if loss concealment is turned off
-    """
-    chtype = list(lossConceal.keys())[0]
-
-    if chtype == 0:
-        return 'noConceal'
-    elif chtype== 'Linear':
-        return linearInterp.interpPackets
-    elif chtype== 'nearestNeighbours':
-        return nearestNeighbours.interpPackets
