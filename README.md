@@ -19,7 +19,7 @@ DFTS2 is a sophisticated simulation framework. It has new features:
 
 ## Overview
 The following figure gives a system overview of Collaborative Intelligence strategies implemented in DFTS2.
-![Deep feature transmission in collaborative intelligence: system overview](https://github.com/AshivDhondea/dfts2_user_doc/blob/main/Figures/sytemoverviewclipped.png)
+<img src="https://github.com/AshivDhondea/dfts2_user_doc/blob/main/Figures/sytemoverviewclipped.png" width="200" height="200">
 
 ## Publications
 Two peer reviewed conference papers were published on work done with DFTS2.
