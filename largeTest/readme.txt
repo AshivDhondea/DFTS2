@@ -7,6 +7,5 @@ largeTest is a directory containing 882 images from 10 classes from Imagenet.
 You can download it from the original DFTS author's Google Drive:
 https://drive.google.com/file/d/1R4Zn6UaZlADqHeKM7ij1k-G-STPkoPN_/view
 
-or you can download it from
+Remove this readme file before running any experiment script.
 
-*insert link from my sfu website*

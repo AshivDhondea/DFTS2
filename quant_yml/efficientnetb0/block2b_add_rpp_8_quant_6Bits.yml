@@ -1,0 +1,41 @@
+DeepModel:
+  customObjects:
+    class: []
+    functions: []
+    module: []
+  fullModel: deep_models_full/efficientnetb0_model.h5
+  normalize: false
+  reshapeDims: [224, 224]
+  task: ImgClass
+ErrorConcealment:
+  ALTeC: {include: false, weightspath: trained_altec/}
+  CALTeC: {include: false}
+  HaLRTC: {include: false, numiters: 50}
+  InpaintNS: {include: false, radius: 5}
+  SiLRTC: {include: false, numiters: 50}
+OutputDir: {resDataDir: lossMaps, simDataDir: simData}
+SimulationMode:
+  Demo: {include: false}
+  MonteCarlo:
+    MC_runs: [0, 1]
+    MC_task: GenLossPatterns
+    include: true
+SplitLayer: {CloudModel: deep_models_split/efficientnetb0_block2b_add_cloud_model.h5,
+  MobileModel: deep_models_split/efficientnetb0_block2b_add_mobile_model.h5, split: block2b_add}
+TestInput:
+  batch_size: 256
+  dataset: imagenet
+  testdir:
+    annotations: []
+    images: largeTest
+    testNames: []
+Transmission:
+  channel:
+    ExternalChannel: {include: false, trace_dir: external_traces}
+    GilbertChannel: {burstLength: 1, include: false, lossProbability: 0.3}
+    RandomLossChannel: {include: false, lossProbability: 0}
+  quantization:
+    include: true
+    1: {numberOfBits: 6}
+    2: {numberOfBits: 8}
+  rowsperpacket: 8

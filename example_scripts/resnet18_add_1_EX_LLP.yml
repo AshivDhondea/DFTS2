@@ -1,0 +1,66 @@
+DeepModel:
+  customObjects:
+    class: []
+    functions: []
+    module: []
+  fullModel: deep_models_full/resnet18_model.h5
+  normalize: False
+  reshapeDims: [224, 224]
+  task: ImgClass
+SplitLayer:
+  split: add_1
+  MobileModel: deep_models_split/resnet18_add_1_mobile_model.h5
+  CloudModel: deep_models_split/resnet18_add_1_cloud_model.h5
+SimulationMode:
+  MonteCarlo:
+   include: True
+   MC_runs: [0,2]
+   MC_task: LoadLossPatterns
+  Demo:
+   include: False
+TestInput:
+  batch_size: 4
+  dataset: imagenet
+  testdir:
+    annotations: []
+    images: largeTest
+    testNames: []
+Transmission:
+  rowsperpacket: 8
+  channel:
+    GilbertChannel:
+      burstLength: 1
+      include: False
+      lossProbability: 0.3
+    RandomLossChannel:
+      include: false
+      lossProbability: 0
+    ExternalChannel:
+      include: True
+      num_channels: 64
+  quantization:
+    include: True
+    1:
+      numberOfBits: 8
+    2:
+      numberOfBits: 8
+OutputDir: 
+  simDataDir: simData
+  resDataDir: external_traces
+ErrorConcealment:
+  CALTeC:
+    include: False
+  ALTeC:
+    include: False
+    weightspath: trained_altec/
+  SiLRTC:
+    include: False
+    numiters: 50
+  HaLRTC:
+    include: False
+    numiters: 50
+  InpaintNS:
+    include: False
+    radius: 5
+
+  
