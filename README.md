@@ -1,16 +1,37 @@
-# DFTS_TF2
-Deep Feature Transmission Simulator (DFTS) - compatible with TensorFlow version 2.
+# DFTS2
+Deep Feature Transmission Simulator (DFTS) version 2.
 
 Originally released in 2018 [[1]](#references), DFTS was developed to be compatible with Tensorflow version 1 (more specifically, version 1.12) and Keras 2.2.2. The demo paper [[2]](#references) gave a brief overview of the simulator. Various changes in Tensorflow 2 [[3]](#references) break the operation of DFTS. 
 
-We have modified DFTS to be now fully Tensorflow version 2-compatible in this repository. Previously, we have edited the original DFTS to run (with minimal modification) in Tensorflow 2 by disabling the v2 behavior in [[4]](#references). For now on, we will focus our efforts on developing DFTS_TF2.
+We have modified DFTS to be now fully Tensorflow version 2-compatible in this repository. Previously we edited the original DFTS to run (with minimal modification) in Tensorflow 2 by disabling the v2 behavior in [[4]](#references). 
+
+DFTS2 is a sophisticated simulation framework. It has new features:
+1. TensorFlow version 2 compatibility.
+2. Additional communication channel models and simulation modes.
+3. Missing feature recovery methods from the recent literature.
 
 ## Contents
-To be completed.
+- [Overview](#overview)
+- [Examplar](#examplar)
+- [Publications](#publications)
+- [Creating your environment](#creating-your-environment)
+- [User documentation](#user-documentation)
 
 ## Overview
-To be completed.
+The following figure gives a system overview of Collaborative Intelligence strategies implemented in DFTS2.
+![Deep feature transmission in collaborative intelligence: system overview](https://github.com/AshivDhondea/dfts2_user_doc/blob/main/Figures/sytemoverviewclipped.png)
 
+## Publications
+Two peer reviewed conference papers were published on work done with DFTS2.
+* A. Dhondea, R. A. Cohen, and I. V.Bajić, [**CALTeC: Content-adaptive linear tensor completion for collaborative intelligence**](https://ieeexplore.ieee.org/document/9506372), Proc. IEEE ICIP, 2021.
+* A. Dhondea, R. A. Cohen, and I.V.Bajić, **DFTS2: Deep feature transmission simulator for collaborative intelligence**.
+For benchmarking purposes and to assist future users, we provide our packet traces, example simulation scripts and Monte Carlo experiment result files in a [Dropbox directory](https://www.dropbox.com/home/MEng_Project/dfts2). The full-scale test set used in our experiments is the same subset of the Imagenet validation set from the original DFTS demo paper [[1]](#references).
+
+## Creating your environment
+You can create a virtual environment using the requirements file.
+
+## User documentation
+The latest version of the user documentation manual can be found [[here](https://github.com/AshivDhondea/dfts2_user_doc)]
 
 ## References
 ### [1] Unnibhavi, H. (2018) DFTS (Version 1.0) [[repo](https://github.com/SFU-Multimedia-Lab/DFTS)]
@@ -22,4 +43,4 @@ To be completed.
 ### [4] Dhondea, A. (2020) DFTS_compat_v1 (Version 1.0) [[repo](https://github.com/AshivDhondea/DFTS_compat_v1)]
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/AshivDhondea/DFTS_TF2/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/AshivDhondea/DFTS2/blob/master/LICENSE) file for details.
