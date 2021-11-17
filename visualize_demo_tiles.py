@@ -1,6 +1,8 @@
 """
 visualize_demo_tiles.py
 
+Tiling function adapted from code developed by Dr. Bob Cohen.
+
 Draw grid on channels to indicate location of packets within them.
 Scale up the images for nicer visualization.
 """
@@ -28,6 +30,7 @@ num_pkts_per_channel = 7
 scaling_factor = 5
 
 tilesPerRow = 8
+tilesPerCol = 8
 str_to_remove = '_'
 str_replacement = ""
 # ---------------------------------------------------------------------------- #
@@ -102,7 +105,7 @@ for i_batch in range(batches):
                 img = Image.open(os.path.join(input_dir,original_str))
                 im = np.array(img,dtype=np.uint8)
                 tensor_in[:,:,i_c] = im
-            tiled_tensor = fn_simple_tensor_tiling(tensor_in,tilesPerRow,tilesPerRow)
+            tiled_tensor = fn_simple_tensor_tiling(tensor_in,tilesPerRow,tilesPerCol)
             tf.keras.preprocessing.image.save_img(os.path.join(output_dir,img_str[i_str]+'_batch_'+str(i_batch)+'_item_'+str(item_id)+'_tiled.jpg'),tiled_tensor,scale=False,file_formt='jpeg',quality=100)
 
             tiled_tensor_gridded = np.copy(tiled_tensor)
@@ -113,20 +116,19 @@ for i_batch in range(batches):
             tiled_tensor_gridded[:,0,2] = 0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
             tiled_tensor_gridded[:,-1,2] = 0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
 
-            for i_x in range(tilesPerRow):
+            for i_x in range(tilesPerCol):
                 dx = i_x*channel_width
-                tiled_tensor_gridded[dx,:,0] =0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
-                tiled_tensor_gridded[dx,:,1] =255*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
-                tiled_tensor_gridded[dx,:,2] =0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
-
-                dx = i_x*channel_width
+                tiled_tensor_gridded[dx,:,0] =0*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
+                tiled_tensor_gridded[dx,:,1] =255*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
+                tiled_tensor_gridded[dx,:,2] =0*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
+                
                 tiled_tensor_gridded[:,dx,0] =0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
                 tiled_tensor_gridded[:,dx,1] =255*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
                 tiled_tensor_gridded[:,dx,2] =0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
 
-            tiled_tensor_gridded[-1,:,0] = 0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
-            tiled_tensor_gridded[-1,:,1] = 255*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
-            tiled_tensor_gridded[-1,:,2] = 0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
+            tiled_tensor_gridded[-1,:,0] = 0*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
+            tiled_tensor_gridded[-1,:,1] = 255*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
+            tiled_tensor_gridded[-1,:,2] = 0*np.ones([tilesPerCol*channel_width],dtype=np.uint8)
 
             tiled_tensor_gridded[:,-1,0] = 0*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
             tiled_tensor_gridded[:,-1,1] = 255*np.ones([tilesPerRow*channel_width],dtype=np.uint8)
