@@ -12,9 +12,8 @@ DFTS2 is a sophisticated simulation framework. It has new features:
 
 ## Contents
 - [Overview](#overview)
-- [Examplar](#examplar)
 - [Publications](#publications)
-- [Creating your environment](#creating-your-environment)
+- [Presentation and demonstration video on YouTube](#presentation-and-demonstration)
 - [User documentation](#user-documentation)
 
 ## Overview
@@ -28,8 +27,8 @@ Two peer reviewed conference papers were published on work done with DFTS2.
 * A. Dhondea, R. A. Cohen, and I.V.Bajić, **DFTS2: Deep feature transmission simulator for collaborative intelligence**.
 For benchmarking purposes and to assist future users, we provide our packet traces, example simulation scripts and Monte Carlo experiment result files in a [Dropbox directory](https://www.dropbox.com/home/MEng_Project/dfts2). The full-scale test set used in our experiments is the same subset of the Imagenet validation set from the original DFTS demo paper [[1]](#references).
 
-## Creating your environment
-You can create a virtual environment using the requirements file.
+## Presentation and demonstration
+In this [YouTube video](https://www.youtube.com/watch?v=5dW5i2XeCd0), we present our simulator, demonstrate how to set up a Python virtual environment for DFTS2, and demonstrate how to use DFTS2.
 
 ## User documentation
 The latest version of the user documentation manual can be found [[here](https://github.com/AshivDhondea/dfts2_user_doc)]
