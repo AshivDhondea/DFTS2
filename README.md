@@ -25,10 +25,10 @@ The following figure gives a system overview of Collaborative Intelligence strat
 Two peer reviewed conference papers were published on work done with DFTS2.
 * A. Dhondea, R. A. Cohen, and I. V.Bajić, [**CALTeC: Content-adaptive linear tensor completion for collaborative intelligence**](https://ieeexplore.ieee.org/document/9506372), Proc. IEEE ICIP, 2021.
 * A. Dhondea, R. A. Cohen, and I.V.Bajić, **DFTS2: Deep feature transmission simulator for collaborative intelligence**.
-For benchmarking purposes and to assist future users, we provide our packet traces, example simulation scripts and Monte Carlo experiment result files in a [Dropbox directory](https://www.dropbox.com/home/MEng_Project/dfts2). The full-scale test set used in our experiments is the same subset of the Imagenet validation set from the original DFTS demo paper [[1]](#references).
+For benchmarking purposes and to assist future users, we provide our packet traces, example simulation scripts and Monte Carlo experiment result files in a [Dropbox directory](https://www.dropbox.com/home/MEng_Project/dfts2). The full-scale test set used in our experiments is the same subset of the Imagenet validation set from the original DFTS demo paper [[1]](#references). Our extended paper, available on [ArXiv](https://arxiv.org/abs/2112.00794), provides Monte Carlo results on the image classification task on ResNet-18, ResNet-34, DenseNet-121 and EfficientNet-B0.
 
 ## Presentation and demonstration
-In this [YouTube video](https://www.youtube.com/watch?v=5dW5i2XeCd0), we present our simulator, demonstrate how to set up a Python virtual environment for DFTS2, and demonstrate how to use DFTS2.
+In this [YouTube video](https://www.youtube.com/watch?v=5dW5i2XeCd0), we present our simulator, demonstrate how to set up a Python virtual environment for DFTS2, and show how to use DFTS2.
 
 ## User documentation
 The latest version of the user documentation manual can be found [[here](https://github.com/AshivDhondea/dfts2_user_doc)]
